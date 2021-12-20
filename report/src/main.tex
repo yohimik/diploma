@@ -1,0 +1,54 @@
+\documentclass{./TechDoc}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{amssymb}
+\usepackage{amsmath,amsthm,mathtools}
+
+\setcounter{tocdepth}{2}
+\setcounter{secnumdepth}{3}
+
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+
+\newcommand{\intro}[2]{
+\stepcounter{section}
+\section*{\hfillПРИЛОЖЕНИЕ #2}
+\begin{center}
+    \Large\bf{#1}
+\end{center}
+\markboth{\MakeUppercase{#1}}{}
+\addcontentsline{toc}{section}{Приложение #2. #1}
+}
+
+\title{Автоматизации управления жизненным циклом веб-сервиса}
+\author{Студент группы P3555}{С. А. Федюкович}
+\academicTeacher{Руководитель профильной организации, наименование организации, должность, поодпись}{}
+
+\documentTitle{ОТЧЕТ ПО ПРОИЗВОДСТВЕННОЙ (ПРЕДЦИПЛОМНОЙ) ПРАКТИКИ}
+\documentCode{ }
+
+\begin{document}
+    \maketitle
+
+    \tableofcontents
+
+    \newpage
+    \input{sections/0-intro}
+    \newpage
+
+    \input{sections/10-briefing}
+
+    \input{sections/20-literature}
+
+    \input{sections/30-relevance}
+
+    \input{sections/40-review}
+
+    \input{sections/50-design}
+
+    \input{sections/60-realization}
+
+    \input{sections/70-registration}
+
+    \input{sections/readings}
+\end{document}
