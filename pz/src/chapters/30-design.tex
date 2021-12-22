@@ -46,11 +46,39 @@
 Культурная вставка dot-файлов через утилиту dot2tex (рис.~\ref{fig:fig02}).
 
 \begin{figure}
-    \centering
 % [width=0.5\textwidth] --- регулировка ширины картинки
     \includegraphics{figures/pic01}
     \caption{Рисунок}
     \label{fig:fig02}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \begin{tikzpicture}
+        \begin{umlsystem}[x=4]{system}{Автоматизация жизненным циклом веб-сервиса}
+            \umlusecase[width=3cm]{Управление правами доступа}
+            \umlusecase[y=-4, width=3cm]{Управление развёрткой}
+            \umlusecase[x=6, width=3cm]{Получить актуальную версию веб-сервиса}
+            \umlusecase[x=6, y=-4, width=3cm]{Получить тестовую версию веб-сервиса}
+        \end{umlsystem}
+
+        \umlactor{Разработчик}{developer}
+        \umlactor[y=-3]{Админнистратор}{admin}
+        \umlactor[x=14]{Пользователь}{user}
+        \umlactor[x=14,y=-3]{Сотр. отдела качества}{qa}
+
+%        \umlassoc{user}{usecase-1}
+
+%        \umlinherit{subuser}{user}
+%        \umlassoc{user}{usecase-1}
+%        \umlassoc{subuser}{usecase-2}
+%        \umlassoc{subuser}{usecase-3}
+%        \umlinherit{usecase-2}{usecase-1}
+%        \umlVHextend{usecase-5}{usecase-4}
+%        \umlinclude[name=incl]{usecase-3}{usecase-4}
+    \end{tikzpicture}
+    \caption{UML диаграмма}
+    \label{fig:fig03}
 \end{figure}
 
 
