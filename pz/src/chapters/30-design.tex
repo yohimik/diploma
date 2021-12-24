@@ -1,45 +1,109 @@
-\chapter{ПРОЕКТИРОВАНИЕ СИСТЕМЫ}
+\chapter{ПРОЕКТИРОВАНИЕ СИСТЕМЫ АВТОМАТИЗАЦИИ УПРАВЛЕНИЯ ЖИЗНЕННЫМ ЦИКЛОМ ВЕБ-СЕРВИСА}
 \label{cha:design}
 
 \section{Анализ требований к системе}
 
-Основными действующими лицами в работе системы являются:
+Так как полученный для равёртки веб-сервисе базируется на Node.js и исходный код разбит на библиотеки, то то для корректной
+работы системы потребуется наличие регистров Node пакетов.
+Помимо регистра пакетов необходимым будет регистр Docker образов, поскольку веб-сервис уже представлен в виде Docker образов
+и имеет все необходимые образы ПО необходимые окружению.
+
+Согласно требованиям были сформулированы основные действующими лица (актёры) в работе системы:
 \begin{itemize}
-    \item разработчик,
-    \item администратор,
-    \item конечный пользователь веб-сервиса,
-    \item сотрудник отдела качества.
+    \item администратор --- пользователь занимающийся настройкой прав доступа другим пользователям
+        и конфигурацией развёртки веб-сервиса,
+    \item разработчик --- пользователь системы имеющий доступ к репозиториям с исходным кодом,
+        хранилищам пакетов и контейнеров, а так же управлению релизами веб-сервиса,
+    \item сотрудник отдела качества (тестировщик) --- пользователь системы имеющий доступ к просмотру аналитеческих данных и
+        проведению автоматизированных тестовых сценариев внутри заранее подготовленных окружений.
 \end{itemize}
 
-Основные случаи использования предсталвены на \ref{fig:fig03}.
+Пользователь системы подразумевает любого актёра.
+На основании описания актёров и их основных возможностей была составлена диаграмма случаев использования.
+Изображение данной диаграммы представлено на Рисунке \ref{fig:use-cases}.
 
-\begin{figure}
+\begin{figure}[h!]
     \centering
     \begin{tikzpicture}
-        \begin{umlsystem}[x=4]{system}{Автоматизация жизненным циклом веб-сервиса}
+        \begin{umlsystem}[x=5]{system}{Система}
             \umlusecase[width=3cm]{Управление правами доступа}
             \umlusecase[y=-4, width=3cm]{Управление развёрткой}
-            \umlusecase[x=6, width=3cm]{Получить актуальную версию веб-сервиса}
-            \umlusecase[x=6, y=-4, width=3cm]{Получить тестовую версию веб-сервиса}
+            \umlusecase[x=6, y=-2, width=3cm]{Конфигурация окружений}
+            \umlusecase[x=6, y=-6, width=3cm]{Конфигурация системных ограничений}
+
+            \umlusecase[y=-8, width=3cm]{Получение доступа к исходному коду и хранилищам}
+            \umlusecase[y=-12, width=3cm]{Управление релизами}
+
+            \umlusecase[x=6, y=-14, width=3cm]{Проведение автоматизированного тестирования}
+            \umlusecase[y=-16, width=3cm]{Сбор аналитических данных}
         \end{umlsystem}
 
-        \umlactor{Разработчик}{developer}
-        \umlactor[y=-3]{Админнистратор}{admin}
-        \umlactor[x=14]{Пользователь}{user}
-        \umlactor[x=14,y=-3]{Сотр. отдела качества}{qa}
+        \umlactor[y=-2]{Администратор}{admin}
+        \umlactor[y=-10]{Разработчик}{developer}
+        \umlactor[y=-14]{Тестировщик}{qa}
 
-%        \umlassoc{user}{usecase-1}
+        \umlassoc{admin}{usecase-1}
+        \umlassoc{admin}{usecase-2}
+        \umlassoc{developer}{usecase-5}
+        \umlassoc{developer}{usecase-6}
+        \umlassoc{qa}{usecase-7}
+        \umlassoc{qa}{usecase-8}
 
-%        \umlinherit{subuser}{user}
-%        \umlassoc{user}{usecase-1}
-%        \umlassoc{subuser}{usecase-2}
-%        \umlassoc{subuser}{usecase-3}
-%        \umlinherit{usecase-2}{usecase-1}
-%        \umlVHextend{usecase-5}{usecase-4}
-%        \umlinclude[name=incl]{usecase-3}{usecase-4}
+        \umlinclude{usecase-3}{usecase-2}
+        \umlinclude{usecase-4}{usecase-2}
     \end{tikzpicture}
-    \caption{Диаграмма случаев использования}
-    \label{fig:fig03}
+    \caption{Диаграмма случаев использования системы}
+    \label{fig:use-cases}
+\end{figure}
+
+С точки зрения CI/CD взаимодействие пользователя с системой сосредоточено вокруг комита в репозиторий и автоматическим запуском
+одной или нескольких задач (Jobs) внутри определённой линии (Pipeline).
+Каждая задача является набором последовательно исполняемых инструкций ожидаемо завершённых без ошибок.
+В случае ошибки выполнение всей линии завершается и повторяется только по действию пользователя.
+При этом линии задач строятся динамически в зависимости от конкретного репозитория и ветки, поэтому некоторые задачи могут быть пропущены при выполнении,
+а некоторые комиты оставаться без линий задач вовсе.
+В общем виде поведение системы отражено на Рисунке \ref{fig:system-common}.
+
+\begin{figure}[h!]
+    \centering
+    \begin{tikzpicture}
+        \begin{umlseqdiag}
+            \umlactor[class=А]{Пользователь}{a}
+            \umldatabase[class=B]{Репозиторий}{b}
+            \umlobject[class=C]{Pipeline}{c}
+            \umlobject[class=D]{Jobs}{d}
+            \begin{umlcall}[op=коммит, type=asynchron]{a}{b}
+                \begin{umlcall}[op=запускает, type=asynchron]{b}{c}
+                    \begin{umlcall}[op=выполняет, type=synchron, return=0]{c}{d}
+                    \end{umlcall}
+                    \begin{umlcall}[op=пропущена, type=synchron]{c}{d}
+                    \end{umlcall}
+                    \begin{umlcall}[op=выполняет, type=synchron, return=1]{c}{d}
+                    \end{umlcall}
+                    \begin{umlcall}[op=пропущена, type=synchron]{c}{d}
+                    \end{umlcall}
+                \end{umlcall}
+            \end{umlcall}
+            \begin{umlcall}[op=коммит, type=asynchron]{a}{b}
+            \end{umlcall}
+            \begin{umlcall}[op=коммит, type=asynchron]{a}{b}
+            \end{umlcall}
+            \begin{umlcall}[op=коммит, type=asynchron]{a}{b}
+                \begin{umlcall}[op=запускает, type=asynchron]{b}{c}
+                    \begin{umlcall}[op=выполняет, type=synchron, return=0]{c}{d}
+                    \end{umlcall}
+                    \begin{umlcall}[op=пропущена, type=synchron]{c}{d}
+                    \end{umlcall}
+                    \begin{umlcall}[op=выполняет, type=synchron, return=0]{c}{d}
+                    \end{umlcall}
+                    \begin{umlcall}[op=выполняет, type=synchron, return=0]{c}{d}
+                    \end{umlcall}
+                \end{umlcall}
+            \end{umlcall}
+        \end{umlseqdiag}
+    \end{tikzpicture}
+    \caption{Общий случай работы системы}
+    \label{fig:system-common}
 \end{figure}
 
 \section{Выбор сервисов архитекутры}
@@ -65,7 +129,9 @@
 Ключевой настройкой явлется политика загрузки образов для задач, поскольку по умолчанию ранер в любом случае будет загружать образ из регистра, даже если образ представлен локально.
 Согласно требованиям ранер должен будет запускать минимум три задачи за единицу времени, данное значение будет отражено в конфигурации на этапе реализации.
 
-\section{Выбор сервисов архитекутры}
+С его помощью автоматизация процессов развёртки и тестирования производится в декларативном стиле путём описания YAML файлов.
+
+\section{Выбор модели ветвления}
 
 Автоматизация контроля качества будет реализована путём запуска описанных разработчиками тестовых сценариев внутри Pipelines.
 Отчёты по прохождению сценариев будут представлены в веб интерфейсе GitLab путём интеграции с CI/CD.

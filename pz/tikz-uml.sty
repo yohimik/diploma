@@ -3818,7 +3818,7 @@
   \setcounter{tikzumlCallEndFragmentNum}{0}%
   %
   \ifx \@umlactor \@empty
-    \newcommand{\umlactor}[2][]{%
+    \newcommand{\umlactor}[3][]{%
       \pgfkeys{/tikzuml/actorobj/.cd, .unknown/.code={%
                                         \let\keyname=\pgfkeyscurrentname%
                                         \let\keyvalue=\pgfkeyscurrentvalue%
@@ -3829,10 +3829,10 @@
       }%
       %
       \pgfkeys{/tikzuml/actorobj/.cd, ##1}%
-      \umlobject[stereo=actor, ##1]{##2}%
+      \umlobject[stereo=actor, ##1]{##2}{##3}%
     }%
   \else%
-    \renewcommand{\umlactor}[2][]{%
+    \renewcommand{\umlactor}[3][]{%
       \pgfkeys{/tikzuml/actorobj/.cd, .unknown/.code={%
                                         \let\keyname=\pgfkeyscurrentname%
                                         \let\keyvalue=\pgfkeyscurrentvalue%
@@ -3843,7 +3843,7 @@
       }%
       %
       \pgfkeys{/tikzuml/actorobj/.cd, ##1}%
-      \umlobject[stereo=actor, ##1]{##2}%
+      \umlobject[stereo=actor, ##1]{##2}{##3}%
     }%
   \fi%
   \begin{scope}[font=\tikzumlDefaultFont]%
@@ -3932,7 +3932,7 @@
 %            scale: scale factor of the object symbol
 %            draw, fill, text; colors
 %            no ddots: when used, disable printing of double dots
-\newcommand{\umlobject}[2][]{
+\newcommand{\umlobject}[3][]{
   \stepcounter{tikzumlObjectNum}%
   %
   \edef\tikzumlobject@ddot{:}%
@@ -3965,13 +3965,13 @@
   }{}%
   %
   \def\tikzumlObjectName{#2}%
-  \expandafter\xdef\csname tikzumlLastChild@\tikzumlObjectName \endcsname{\tikzumlObjectName}%
+  \expandafter\xdef\csname tikzumlLastChild@\tikzumlObjectName \endcsname{#3}%
   %
   \ifnum\thetikzumlObjectNum=1%
-    \xdef\tikzumlIdList{\tikzumlObjectName}%
+    \xdef\tikzumlIdList{#3}%
   \else%
     \let\tikzumlIdListOld\tikzumlIdList%
-    \expandafter\xdef\expandafter\tikzumlIdList\expandafter{\tikzumlIdListOld,\tikzumlObjectName}%
+    \expandafter\xdef\expandafter\tikzumlIdList\expandafter{\tikzumlIdListOld, #3}%
   \fi%
   %
   \tikzstyle{tikzuml object box style}=[rectangle, text=\tikzumlObjectTextColor, font=\tikzumlDefaultFont]%
@@ -3985,9 +3985,9 @@
   }%
   %
   \ifnum\tikzumlInCreateCall=1%
-    \draw (\tikzumlCreateCallObjectSrc -| \tikzumlObjectX,0) node[tikzuml object box style] (\tikzumlObjectName) {\tikzumlObjectName\tikzumlobject@ddot\tikzumlObjectClass};%
+    \draw (\tikzumlCreateCallObjectSrc -| \tikzumlObjectX,0) node[tikzuml object box style] (#3) {\tikzumlObjectName\tikzumlobject@ddot\tikzumlObjectClass};%
   \else%
-    \node[tikzuml object box style] (\tikzumlObjectName) at (\tikzumlObjectX,\tikzumlObjectY) {\tikzumlObjectName\tikzumlobject@ddot\tikzumlObjectClass};%
+    \node[tikzuml object box style] (#3) at (\tikzumlObjectX,\tikzumlObjectY) {\tikzumlObjectName\tikzumlobject@ddot\tikzumlObjectClass};%
   \fi%
   %
   \ifthenelse{\equal{\tikzumlObjectStereo}{multi}}{%
@@ -4004,7 +4004,7 @@
     \draw[draw=\tikzumlObjectDrawColor] (\tikzumlObjectName.north west) rectangle (\tikzumlObjectName.south east);
   }{%
     \ifthenelse{\equal{\tikzumlObjectStereo}{object}}{}{%
-      \node[above=1ex, name=\tikzumlObjectName-picture] at (\tikzumlObjectName) {\csname pictured\tikzumlObjectStereo \endcsname{draw=\tikzumlObjectDrawColor, fill=\tikzumlObjectFillColor, scale=\tikzumlObjectScale}};
+      \node[above=1ex, name=\tikzumlObjectName-picture] at (#3) {\csname pictured\tikzumlObjectStereo \endcsname{draw=\tikzumlObjectDrawColor, fill=\tikzumlObjectFillColor, scale=\tikzumlObjectScale}};
     }%
   }%
 }%
@@ -4023,7 +4023,7 @@
   \umlobject[no ddots, #1]{#2}%
 }%
 %
-\newcommand{\umldatabase}[2][]{%
+\newcommand{\umldatabase}[3][]{%
   \pgfkeys{/tikzuml/databaseobj/.cd, .unknown/.code={%
                                        \let\keyname=\pgfkeyscurrentname%
                                        \let\keyvalue=\pgfkeyscurrentvalue%
@@ -4033,7 +4033,7 @@
                                      }%
   }%
   \pgfkeys{/tikzuml/databaseobj/.cd, #1}%
-  \umlobject[stereo=database, #1]{#2}%
+  \umlobject[stereo=database, #1]{#2}{#3}%
 }%
 \newcommand{\umlentity}[2][]{%
   \pgfkeys{/tikzuml/entityobj/.cd, .unknown/.code={%
@@ -4071,7 +4071,7 @@
   \pgfkeys{/tikzuml/boundaryobj/.cd, #1}%
   \umlobject[stereo=boundary, #1]{#2}%
 }%
-\newcommand{\umlmulti}[2][]{%
+\newcommand{\umlmulti}[3][]{%
   \pgfkeys{/tikzuml/multiobj/.cd, .unknown/.code={%
                                     \let\keyname=\pgfkeyscurrentname%
                                     \let\keyvalue=\pgfkeyscurrentvalue%
@@ -4081,7 +4081,7 @@
                                   }%
   }%
   \pgfkeys{/tikzuml/multiobj/.cd, #1}%
-  \umlobject[stereo=multi, #1]{#2}%
+  \umlobject[stereo=multi, #1]{#2}{#3}%
 }%
 %
 \newcounter{tikzumlSDNodeNum}%
