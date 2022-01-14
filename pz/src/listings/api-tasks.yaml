@@ -1,0 +1,30 @@
+image: docker/compose:alpine-1.29.2
+
+before_script:
+  - cat ${DOCKER_REGISTRY_WRITE_BOT_PASSWORD} | docker login -u ${DOCKER_REGISTRY_WRITE_BOT_LOGIN} --password-stdin registry.gitlab.com/itmo-diploma/web-client
+
+migrate_db:
+  stage: "Migrate DB"
+  tags:
+    - orchestrator
+  only:
+    variables:
+      - $MIGRATE_IMAGE_TAG
+    refs:
+      - master
+  script:
+    - docker pull registry.gitlab.com/itmo-diploma/api:"$MIGRATE_IMAGE_TAG"
+    - docker run --rm --net=itmo-diploma_"$BRANCH"_backend registry.gitlab.com/itmo-diploma/api:"$MIGRATE_IMAGE_TAG" npm run db:migrate:"$BRANCH"
+
+# Upload REST API interface
+deploy_endpoints:
+  stage: "Deploy Endpoints"
+  tags:
+    - orchestrator
+  only:
+    variables:
+      - $DEPLOY_ENDPOINTS
+    refs:
+      - master
+  script:
+    - docker-compose -p itmo-diploma_"$BRANCH" -f docker-compose."$BRANCH".yaml up --no-deps "endpoints"

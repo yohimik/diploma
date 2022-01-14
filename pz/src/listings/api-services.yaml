@@ -1,0 +1,78 @@
+version: '3.7'
+
+services:
+  production-db:
+    build:
+      context: ./postgres
+      args:
+        ENV: production
+    environment:
+      POSTGRES_PASSWORD: ${MASTER_POSTGRES_PASSWORD}
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - /data:/var/lib/postgresql/data:z
+    networks:
+      - backend
+
+  production-api:
+    pull_policy: always
+    image: registry.gitlab.com/psytechapp/api:latest-dev
+    restart: always
+    environment:
+      NODE_ENV: "production"
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+    networks:
+      - esp
+      - backend
+      - nginx-network
+
+  production-endpoints:
+    build:
+      context: ./gcloud
+    entrypoint: sh -c \
+      "/usr/local/wait-for -t 30 production-api:3000 -- echo 'API is ready' &&
+      curl http://production-api:3000/api/v1/json | jq '.' > ./swagger.json &&
+      cat ./swagger.json &&
+      gcloud endpoints services deploy ./swagger.json"
+    networks:
+      - backend
+
+  production-esp:
+    image: gcr.io/endpoints-release/endpoints-runtime:2
+    command:
+      - "--service=api.psytech.app"
+      - "--rollout_strategy=managed"
+      - "--listener_port=3000"
+      - "--backend=http://production-api:3000"
+    networks:
+      - nginx-network
+      - esp
+
+  production-web-client:
+    pull_policy: always
+    image: registry.gitlab.com/psytechapp/web-client:latest-dev
+    restart: always
+    environment:
+      NODE_ENV: "production"
+      WEB_SOCKET_API_URL: "https://socket.psytech.app"
+      BASE_INTERNAL_API_URL: "http://production-api:3000"
+      CONTACT_PHONE_NUMBER_TEXT_RU: ${CONTACT_PHONE_NUMBER_TEXT_RU}
+      CONTACT_PHONE_NUMBER: ${CONTACT_PHONE_NUMBER}
+    networks:
+      - nginx-network
+
+networks:
+  backend:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.167.1.1/28
+  esp:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.165.1.1/28
+  nginx-network:
+    external: true

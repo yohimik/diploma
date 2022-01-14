@@ -1,0 +1,21 @@
+update:
+  stage: "Update"
+  tags:
+    - orchestrator
+  only:
+    - master
+  except:
+    variables:
+      - $SERVICE
+      - $BRANCH
+      - $MIGRATE_IMAGE_TAG
+      - $DEPLOY_ENDPOINTS
+  script:
+    - docker-compose -p itmo-diploma_dev -f docker-compose.dev.yaml up -d --build
+    - docker-compose -p itmo-diploma_master -f docker-compose.master.yaml up -d --build
+
+stages:
+  - "Deploy Endpoints"
+  - "Migrate DB"
+  - "Update a service"
+  - "Update"

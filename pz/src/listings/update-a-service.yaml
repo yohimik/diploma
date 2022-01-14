@@ -1,0 +1,12 @@
+update_service:
+  stage: "Update a service"
+  tags:
+    - orchestrator
+  only:
+    variables:
+      - $SERVICE && $BRANCH
+    refs:
+      - master
+  script:
+    - docker-compose -f docker-compose."$BRANCH".yaml pull "$SERVICE"
+    - docker-compose -f docker-compose."$BRANCH".yaml up -d --no-deps "$SERVICE"

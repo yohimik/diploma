@@ -9,7 +9,7 @@
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[scale=0.4]{src/figures/0}
+    \includegraphics[scale=0.4]{src/figures/group-ready}
     \caption{Скриншот создания группы в GitLab}
     \label{fig:group-ready}
 \end{figure}
@@ -19,22 +19,22 @@
 \begin{itemize}
     \item web-client --- репозиторий для хранения исходного кода веб-клиента проекта,
     \item api --- репозиторий для хранения исходного кода API проекта.
-    \item node packages --- репозиторий для хранения исходного кода общих npm зависимостей проекта.
+    \item node-packages --- репозиторий для хранения исходного кода общих npm зависимостей проекта.
 \end{itemize}
 
-Так же в корне каждого репозитория был загружен Dockerfile для развёртки данного сервиса.
+Так же в корне каждого репозитория был загружен Dockerfile для развёртывания данного сервиса.
 Так как в качестве модели ветвления была выбрана модель git flow, то так же были подготовлены соответствующие ветки в репозиториях под разные окружения: develop, testing и release.
 Установка доступа к данным репозиториям предоставляется только разработчикам данных программных решений в целях безопасности.
 
 Подготовка хранилищ npm пакетов и Docker образов не требуется, так как GitLab берёт на себя данную ответственность и не требует дополнительных действий от пользователя.
 
-На следующем этапе был подготовлен репозиторий deployment для хранения общих скриптов и конфигураций окружения и развёртки.
-Установка доступа к этому репозиторию предоставляется только команде обеспечения развёртки в целях безопасности.
+На следующем этапе был подготовлен репозиторий deployment для хранения общих скриптов и конфигураций окружения и развёртывания.
+Установка доступа к этому репозиторию предоставляется только команде обеспечения развёртывания в целях безопасности.
 Результаты создания репозиториев представлены на рисунке \ref{fig:reps-ready}.
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[scale=0.4]{src/figures/1}
+    \includegraphics[scale=0.4]{src/figures/reps-ready}
     \caption{Скриншот создания репозиториев в GitLab}
     \label{fig:reps-ready}
 \end{figure}
@@ -54,7 +54,7 @@ $ sudo ufw allow 4789
 \begin{lstlisting}[language=bash,caption={Инициализация кластера}]
 $ docker swarm init --advertise-addr 192.168.1.101
   Swarm initialized: current node (dxn1zf6l61qsb1josjja83ngz) is now a manager.
-  To add a worker to this swarm, run the following comman:
+  To add a worker to this swarm, run the following command:
     docker swarm join --token <token> 192.168.1.101:2377
   To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
 \end{lstlisting}
@@ -85,13 +85,39 @@ $ docker swarm init --advertise-addr 192.168.1.101
     \item build.yaml --- набор универсальных задач, предназначенный для сборки Docker образа и последующей загрузки в регистр контейнеров,
     \item publish.yaml --- набор универсальных задач, предназначенный для оповещения кластера об обновлении сервиса для загрузки новой версии,
     \item publish-api.yaml --- расширенная версия publish.yaml, содержащая дополнительные задачи для проведения миграция базы данных в случае необходимости,
-    \item build-package.yaml --- набор задач для отслеживания к какому конкретному сервису принадлежит npm пакет путём построения графа зависимостей на основании package.json файлов,
-    \item publish-package.yaml --- набор задач для загрузки собранного npm пакета.
 \end{itemize}
+
+Одним из наиболее интересных файлов конфигураций является .gitlab-ci.yaml, поскольку в нём содержится основная логика управления развёрткой веб-сервиса.
+На данных строчках содержится автоматическое подключение к кластеру Docker образов без с учётом риска передачи паролей через переменные окружения.
+Так же в данных строчках содержится описание стадий задач, необходимых для развёртки сервиса api.
+Пример приведён на листинге \ref{lst:api-tasks}.
+
+\lstinputlisting[language=yaml,caption=Задачи сервиса api (\Code{deployment/.gitlab-ci.yml}),label=lst:api-tasks]{src/listings/api-tasks.yaml}
+
+Данная задача используется для безопасного обновления конкретного сервиса по его названию и названию окружения, которая добавляется в линию только при указании значения названия сервиса и ветки.
+Пример приведён на листинге \ref{lst:update-a-service}.
+
+\lstinputlisting[language=yaml,caption=Обновление сервиса (\Code{deployment/.gitlab-ci.yml}),label=lst:update-a-service]{src/listings/update-a-service.yaml}
+
+В конце файла содержится задача, условием запуска которой является отсутствие названия сервиса и веток.
+Данная задача используется для экстренного перезапуска веб-сервиса.
+Пример приведён на листинге \ref{lst:update-service}.
+
+\lstinputlisting[language=yaml,caption=Перезапуск веб-сервиса (\Code{deployment/.gitlab-ci.yml}),label=lst:update-service]{src/listings/update-service.yaml}
 
 Далее была произведена конфигурация на уровне сервисов компонентов, в репозитории api и web-client были добавлены конфигурации CI/CD путём создания .gitlab-ci.yml файла, содержащего основные задачи.
 
-Аналогичные задачи были описаны для репозитория node packages.
+Для репозитория node-packages были описаны задачи с использованием CLI lerna, которая предназначена для организации работы моно-репозитория.
+Использование этой библиотеки обусловлено большим сообществом разработчиков и открытостью исходного кода.
+Данная программа обновляет версии библиотек при помощи построения и обхода графа зависимостей, построенного на основании package.json файлов.
+Пример данного графа в условиях данного веб-сервиса приведён на рисунке \ref{fig:dependency-graph}.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[scale=0.4]{src/figures/dependency-graph}
+    \caption{Граф зависимостей компонентов веб-сервиса}
+    \label{fig:dependency-graph}
+\end{figure}
 
 \section{Развёртка сервисов внутри кластера}
 
@@ -105,6 +131,23 @@ $ docker swarm init --advertise-addr 192.168.1.101
     \item testing --- аналогичен develop, только используется для целей ручного тестирования веб-сервиса,
     \item release --- web-client запускается в одном экземпляре, база данных и api запускаются в трёх, большая часть ресурса отведена под эти сервисы.
 \end{itemize}
+
+На листинге \ref{lst:api-services} приведён пример части конфигурационного файла Docker Swarm для запуска сервиса api.
+
+\lstinputlisting[language=yaml,caption=Сервисы api (\Code{deployment/docker-compose.master.yaml}),label=lst:api-services]{src/listings/api-services.yaml}
+
+На листинге \ref{lst:web-client-service} приведён пример части конфигурационного файла Docker Swarm для запуска сервиса web-client.
+
+\lstinputlisting[language=yaml,caption=Сервисы web-client (\Code{deployment/docker-compose.master.yaml}),label=lst:web-client-services]{src/listings/web-client-services.yaml}
+
+В итоге веб-сервис был развёрнут, пример открытия веб страницы приведён на рисунке \ref{fig:app-screen}.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[scale=0.4]{src/figures/app-screen}
+    \caption{Скриншот открытия страницы веб-сервиса}
+    \label{fig:app-screen}
+\end{figure}
 
 %%% Local Variables:
 %%% mode: latex

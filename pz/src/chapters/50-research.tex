@@ -5,6 +5,15 @@
 
 Тестирование проводилось в браузере Safari Version 15.2 (17612.3.6.1.6).
 
+Перед проведением ручного тестирования каждая линия задач была проверена при помощи описанного ранее эмулятора GitLab, пример на рисунке \ref{fig:editor-example}.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[scale=0.3]{src/figures/editor-example}
+    \caption{Эмулятор GitLab с линией deployment}
+    \label{fig:editor-example}
+\end{figure}
+
 Описание прохождения сценариев тестирования в порядке описания в плане:
 
 \begin{enumerate}
@@ -16,14 +25,14 @@
 
     \begin{figure}[ht]
         \centering
-        \includegraphics[scale=0.8]{src/figures/2}
+        \includegraphics[scale=0.8]{src/figures/qa-pipeline}
         \caption{Линия тестирования в GitLab}
         \label{fig:qa-pipeline}
     \end{figure}
 
     \begin{figure}[ht]
         \centering
-        \includegraphics[scale=0.4]{src/figures/3}
+        \includegraphics[scale=0.4]{src/figures/qa-artifacts}
         \caption{Артефакты тестирования в GitLab}
         \label{fig:qa-artifacts}
     \end{figure}
@@ -42,21 +51,21 @@
 
     \begin{figure}[ht]
         \centering
-        \includegraphics[scale=0.8]{src/figures/4}
+        \includegraphics[scale=0.8]{src/figures/qa-library}
         \caption{Загрузка библиотеки в хранилище}
         \label{fig:qa-library}
     \end{figure}
 
     \begin{figure}[ht]
         \centering
-        \includegraphics[scale=0.6]{src/figures/6}
+        \includegraphics[scale=0.6]{src/figures/qa-pipeline-trigger}
         \caption{Срабатывает автоматизация тестирования, сборка по нажатию пользователя}
         \label{fig:qa-pipeline-trigger}
     \end{figure}
 
     \begin{figure}[ht]
         \centering
-        \includegraphics[scale=0.4]{src/figures/7}
+        \includegraphics[scale=0.4]{src/figures/qa-release-creating}
         \caption{Успешное создание релиза}
         \label{fig:qa-release-creating}
     \end{figure}
@@ -68,16 +77,16 @@
 
     \begin{figure}[ht]
         \centering
-        \includegraphics[scale=0.8]{src/figures/8}
-        \caption{Применение конфигураций развёртки}
+        \includegraphics[scale=0.8]{src/figures/qa-deploy}
+        \caption{Применение конфигураций развёртывания}
         \label{fig:qa-deploy}
     \end{figure}
     \item
 
     \begin{figure}[ht]
         \centering
-        \includegraphics[scale=0.6]{src/figures/5}
-        \caption{Применение конфигураций развёртки определенного сервиса компонента}
+        \includegraphics[scale=0.6]{src/figures/qa-deploy-service}
+        \caption{Применение конфигураций развёртывания определенного сервиса компонента}
         \label{fig:qa-deploy-service}
     \end{figure}
 \end{enumerate}
@@ -97,7 +106,7 @@
         \hline
         2 & Линия задач релиза создания релиза  & Линии собираются правильно, задачи выполняются, веб-сервиса обновляется & Линии собираются правильно, задачи выполняются, веб-сервиса обновляется & Процесс создание релизов не самый простой  \\
         \hline
-        3 & Линия задач управления развёрткой  & Веб-сервис правильно реагирует на изменение конфигураций развёртки & Веб-сервис правильно реагирует на изменение конфигураций развёртки & Требуется несколько минут на применение настроек \\
+        3 & Линия задач управления развёрткой  & Веб-сервис правильно реагирует на изменение конфигураций развёртывания & Веб-сервис правильно реагирует на изменение конфигураций развёртывания & Требуется несколько минут на применение настроек \\
         \hline
     \end{longtable}
 \end{center}

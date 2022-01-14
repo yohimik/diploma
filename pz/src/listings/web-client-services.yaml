@@ -1,0 +1,26 @@
+  production-web-client:
+    pull_policy: always
+    image: registry.gitlab.com/psytechapp/web-client:latest-dev
+    restart: always
+    environment:
+      NODE_ENV: "production"
+      WEB_SOCKET_API_URL: "https://socket.psytech.app"
+      BASE_INTERNAL_API_URL: "http://production-api:3000"
+      CONTACT_PHONE_NUMBER_TEXT_RU: ${CONTACT_PHONE_NUMBER_TEXT_RU}
+      CONTACT_PHONE_NUMBER: ${CONTACT_PHONE_NUMBER}
+    networks:
+      - nginx-network
+
+networks:
+  backend:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.167.1.1/28
+  esp:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.165.1.1/28
+  nginx-network:
+    external: true
