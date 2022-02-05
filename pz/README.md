@@ -12,7 +12,7 @@ pdflatex -file-line-error -interaction=nonstopmode -synctex=1 -output-format=pdf
 pdflatex -file-line-error -interaction=nonstopmode -synctex=1 -output-format=pdf -output-directory=/output/dir/ main.tex
 ```
 
-### tikz-uml
+## tikz-uml
 
 Файл `tikz-uml.sty` содержит исходный код пакета `tikz-uml` с поддержкой кириллицы.
 
